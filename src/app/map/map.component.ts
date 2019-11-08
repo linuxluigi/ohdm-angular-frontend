@@ -77,25 +77,33 @@ export class MapComponent implements OnInit {
   }
 
   getPermalink() {
-    let hash: string = this.route.snapshot.fragment.replace('map=', '');
-    let parts: string[] = hash.split('/');
+    if (this.route.snapshot.fragment) {
+      let hash: string = this.route.snapshot.fragment.replace('map=', '');
+      let parts: string[] = hash.split('/');
 
-    if (parts.length != 3) {
-      console.log("permalink url is invalid!")
-      // set default position in berlin
-      this.view = new OlView({
-        center: fromLonLat([13.404954, 52.520008]),
-        zoom: 13
-      });
+      if (parts.length != 3) {
+        console.log("permalink url is invalid!")
+        this.setDefaultPermalink();
+      } else {
+        let latitude: number = Number(parts[1]);
+        let longitude: number = Number(parts[2]);
+        let zoom: number = Number(parts[0]);
+        this.view = new OlView({
+          center: fromLonLat([longitude, latitude]),
+          zoom: zoom
+        });
+      }
     } else {
-      let latitude: number = Number(parts[1]);
-      let longitude: number = Number(parts[2]);
-      let zoom: number = Number(parts[0]);
-      this.view = new OlView({
-        center: fromLonLat([longitude, latitude]),
-        zoom: zoom
-      });
+      this.setDefaultPermalink();
     }
+  }
+
+  setDefaultPermalink() {
+    // set default position in berlin
+    this.view = new OlView({
+      center: fromLonLat([13.404954, 52.520008]),
+      zoom: 13
+    });
   }
 
 }
