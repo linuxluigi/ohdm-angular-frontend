@@ -2,7 +2,7 @@
   <div class="form-group">
     <div class="input-group">
       <input class="form-control" placeholder="yyyy-mm-dd" name="dp" [(ngModel)]="mapDate" ngbDatepicker
-        #d="ngbDatepicker" (dateSelect)="onDateChange()" (keyup.enter)="onDateChange()">
+        #d="ngbDatepicker" (dateSelect)="onDateChange()" (keyup.enter)="onDateChange()" [minDate]="{year: 1, month: 1, day: 1}" [maxDate]="maxDate">
       <div class="input-group-append">
         <button class="btn btn-outline-success my-2 my-sm-0" type="button" (click)="d.toggle()">Pick Date</button>
       </div>
