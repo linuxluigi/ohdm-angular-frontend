@@ -37,24 +37,27 @@ export class MapComponent implements OnInit {
         const requestDate: NgbDate = new NgbDate(Number(params['year']), Number(params['month']), Number(params['day']));
         this.mapService.setMapDate(requestDate);
 
-        // TODO set new map for requestDate
-        console.log(requestDate);
+        if (this.map) {
+          // remove all old layers & a new request layer
+          this.removeAllMapLayers();
+          this.setMapLayer(requestDate);
+        } else {
+          // create map view if not exist
+          this.setupMap(requestDate);
+        }
       }
     );
 
-    this.source = new OlXYZ({
-      url: 'http://tile.osm.org/{z}/{x}/{y}.png'
-    });
+  }
 
-    this.layer = new OlTileLayer({
-      source: this.source
-    });
-
-    this.map = new OlMap({
+  setupMap(mapDate: NgbDate) {
+        this.map = new OlMap({
       target: 'map',
-      layers: [this.layer],
+      layers: [],
       view: this.view,
     });
+
+    this.setMapLayer(mapDate);
 
     // update permalink url
     let view = this.map.getView();
@@ -74,6 +77,26 @@ export class MapComponent implements OnInit {
 
     // trigger when map was moved
     this.map.on('moveend', updatePermalink);
+  }
+
+  setMapLayer(mapDate: NgbDate) {
+    this.source = new OlXYZ({
+      url: 'http://localhost:8000/tile/' + mapDate.year + '/' + mapDate.month + '/' + mapDate.day + '/{z}/{x}/{y}/tile.png'
+    });
+
+    this.layer = new OlTileLayer({
+      source: this.source
+    });
+
+    this.map.addLayer(this.layer);
+  }
+
+  removeAllMapLayers() {
+    // remove all map layers
+    let map = this.map;
+    this.map.getLayers().forEach(function (layer) {
+      map.removeLayer(layer);
+    });
   }
 
   getPermalink() {
