@@ -6,6 +6,10 @@ import OlTileLayer from 'ol/layer/Tile';
 import OlView from 'ol/View';
 
 import { fromLonLat } from 'ol/proj';
+import { ActivatedRoute, Params } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { MapService } from '../map-service/map.service';
+import { NgbDate } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-map',
@@ -17,10 +21,21 @@ export class MapComponent implements OnInit {
   source: OlXYZ;
   layer: OlTileLayer;
   view: OlView;
+  paramsSubscription: Subscription;
 
-  constructor() { }
+  constructor(private route: ActivatedRoute, private mapService: MapService) { }
 
   ngOnInit() {
+
+    this.paramsSubscription = this.route.params.subscribe(
+      (params: Params) => {
+        const requestDate: NgbDate = new NgbDate(Number(params['year']), Number(params['month']), Number(params['day']));
+        this.mapService.setMapDate(
+          requestDate
+        );
+      }
+    );
+
     this.source = new OlXYZ({
       url: 'http://tile.osm.org/{z}/{x}/{y}.png'
     });
