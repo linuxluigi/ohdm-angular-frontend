@@ -1,0 +1,25 @@
+version: "3.7"
+
+volumes:
+  production_traefik: {}
+
+services:
+  traefik:
+    build:
+      context: .
+      dockerfile: ./compose/traefik/Dockerfile
+    image: ohdm_angular_frontend_traefik
+    depends_on:
+      - angular
+    volumes:
+      - production_traefik:/etc/traefik/acme
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+
+  angular:
+    build:
+      context: .
+      dockerfile: ./compose/angular/Dockerfile
+    image: ohdm_angular_frontend_angular
+    restart: always
