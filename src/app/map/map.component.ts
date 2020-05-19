@@ -1,21 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-
-import OlMap from 'ol/Map';
-import OlXYZ from 'ol/source/XYZ';
-import OlTileLayer from 'ol/layer/Tile';
-import OlView from 'ol/View';
-import { transform } from "ol/proj";
-
-import { fromLonLat } from 'ol/proj';
-import { ActivatedRoute, Params, Router, NavigationExtras } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { MapService } from '../map-service/map.service';
-import { NgbDate } from '@ng-bootstrap/ng-bootstrap';
+import { Component, OnInit } from "@angular/core";
+import {
+  ActivatedRoute,
+  NavigationExtras,
+  Params,
+  Router,
+} from "@angular/router";
+import { NgbDate } from "@ng-bootstrap/ng-bootstrap";
+import OlTileLayer from "ol/layer/Tile";
+import OlMap from "ol/Map";
+import { fromLonLat, transform } from "ol/proj";
+import OlXYZ from "ol/source/XYZ";
+import OlView from "ol/View";
+import { Subscription } from "rxjs";
+import { MapService } from "../map-service/map.service";
 
 @Component({
-  selector: 'app-map',
-  templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss']
+  selector: "app-map",
+  templateUrl: "./map.component.html",
+  styleUrls: ["./map.component.scss"],
 })
 export class MapComponent implements OnInit {
   map: OlMap;
@@ -24,35 +26,39 @@ export class MapComponent implements OnInit {
   view: OlView;
   paramsSubscription: Subscription;
 
-  constructor(private route: ActivatedRoute, private router: Router, private mapService: MapService) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private mapService: MapService
+  ) {}
 
   ngOnInit() {
-
     this.getPermalink();
 
     // trigger when url was updated
-    this.paramsSubscription = this.route.params.subscribe(
-      (params: Params) => {
-        // set new mapDate
-        const requestDate: NgbDate = new NgbDate(Number(params['year']), Number(params['month']), Number(params['day']));
-        this.mapService.setMapDate(requestDate);
+    this.paramsSubscription = this.route.params.subscribe((params: Params) => {
+      // set new mapDate
+      const requestDate: NgbDate = new NgbDate(
+        Number(params.year),
+        Number(params.month),
+        Number(params.day)
+      );
+      this.mapService.setMapDate(requestDate);
 
-        if (this.map) {
-          // remove all old layers & a new request layer
-          this.removeAllMapLayers();
-          this.setMapLayer(requestDate);
-        } else {
-          // create map view if not exist
-          this.setupMap(requestDate);
-        }
+      if (this.map) {
+        // remove all old layers & a new request layer
+        this.removeAllMapLayers();
+        this.setMapLayer(requestDate);
+      } else {
+        // create map view if not exist
+        this.setupMap(requestDate);
       }
-    );
-
+    });
   }
 
   setupMap(mapDate: NgbDate) {
-        this.map = new OlMap({
-      target: 'map',
+    this.map = new OlMap({
+      target: "map",
       layers: [],
       view: this.view,
     });
@@ -60,32 +66,55 @@ export class MapComponent implements OnInit {
     this.setMapLayer(mapDate);
 
     // update permalink url
-    let view = this.map.getView();
-    let router = this.router;
+    const view = this.map.getView();
+    const router = this.router;
 
-
-    let updatePermalink = function () {
-      let center = transform(view.getCenter(), 'EPSG:3857', 'EPSG:4326')
-      let latitude = Math.round(center[0] * 100) / 100;
-      let longitude = Math.round(center[1] * 100) / 100;
-      let permalinkFragment: string = "map=" + view.getZoom() + "/" + longitude + "/" + latitude;
-      let navigationExtras: NavigationExtras = {
-        fragment: permalinkFragment
+    const updatePermalink = function () {
+      const center = transform(view.getCenter(), "EPSG:3857", "EPSG:4326");
+      const latitude = Math.round(center[0] * 100) / 100;
+      const longitude = Math.round(center[1] * 100) / 100;
+      const permalinkFragment: string =
+        "map=" + view.getZoom() + "/" + longitude + "/" + latitude;
+      const navigationExtras: NavigationExtras = {
+        fragment: permalinkFragment,
       };
       router.navigate([], navigationExtras);
     };
 
     // trigger when map was moved
-    this.map.on('moveend', updatePermalink);
+    this.map.on("moveend", updatePermalink);
   }
 
   setMapLayer(mapDate: NgbDate) {
+    // todo use enviroment vars
     this.source = new OlXYZ({
-      url: 'http://localhost:8000/tile/' + mapDate.year + '/' + mapDate.month + '/' + mapDate.day + '/{z}/{x}/{y}/tile.png'
+      urls: [
+        "https://a.ohdm.net/" +
+          mapDate.year +
+          "/" +
+          mapDate.month +
+          "/" +
+          mapDate.day +
+          "/{z}/{x}/{y}/tile.png",
+        "https://b.ohdm.net/" +
+          mapDate.year +
+          "/" +
+          mapDate.month +
+          "/" +
+          mapDate.day +
+          "/{z}/{x}/{y}/tile.png",
+        "https://c.ohdm.net/" +
+          mapDate.year +
+          "/" +
+          mapDate.month +
+          "/" +
+          mapDate.day +
+          "/{z}/{x}/{y}/tile.png",
+      ],
     });
 
     this.layer = new OlTileLayer({
-      source: this.source
+      source: this.source,
     });
 
     this.map.addLayer(this.layer);
@@ -93,7 +122,7 @@ export class MapComponent implements OnInit {
 
   removeAllMapLayers() {
     // remove all map layers
-    let map = this.map;
+    const map = this.map;
     this.map.getLayers().forEach(function (layer) {
       map.removeLayer(layer);
     });
@@ -101,19 +130,20 @@ export class MapComponent implements OnInit {
 
   getPermalink() {
     if (this.route.snapshot.fragment) {
-      let hash: string = this.route.snapshot.fragment.replace('map=', '');
-      let parts: string[] = hash.split('/');
+      const hash: string = this.route.snapshot.fragment.replace("map=", "");
+      const parts: string[] = hash.split("/");
 
       if (parts.length != 3) {
-        console.log("permalink url is invalid!")
+        console.log("permalink url is invalid!");
         this.setDefaultPermalink();
       } else {
-        let latitude: number = Number(parts[1]);
-        let longitude: number = Number(parts[2]);
-        let zoom: number = Number(parts[0]);
+        const latitude: number = Number(parts[1]);
+        const longitude: number = Number(parts[2]);
+        const zoom: number = Number(parts[0]);
         this.view = new OlView({
           center: fromLonLat([longitude, latitude]),
-          zoom: zoom
+          zoom,
+          maxZoom: 19,
         });
       }
     } else {
@@ -125,8 +155,7 @@ export class MapComponent implements OnInit {
     // set default position in berlin
     this.view = new OlView({
       center: fromLonLat([13.404954, 52.520008]),
-      zoom: 13
+      zoom: 13,
     });
   }
-
 }
