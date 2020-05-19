@@ -2,6 +2,26 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.17.
 
+## Deploy on Github Pages
+
+To deploy the app on Github, it use https://github.com/angular-schule/angular-cli-ghpages
+
+Custom Domain:
+
+```
+$ ng deploy --cname=ohdm.net
+```
+
+To point your domain to github pages, you have to set the `CNAME` entry of your
+domain to `username.github.io`. Don't forget to change `username` with your
+Github username, on which the site should be hosted!
+
+Without custom domain:
+
+```
+$ ng deploy --base-href=/ohdm-angular-frontend/
+```
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
